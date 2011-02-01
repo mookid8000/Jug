@@ -1,0 +1,9 @@
+-- What? --
+
+Jug is an experimental DI container.
+
+It is nowhere near finished. Actually it is probably not even the slightest bit functional.
+
+-- Why? --
+
+After having messed a little bit with Castle Windsor's source code, I have been having some nasty thoughts on how container extensibility could be implemented. It may or may not work out.
