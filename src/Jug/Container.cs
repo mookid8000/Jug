@@ -73,10 +73,11 @@ namespace Jug
 
         public TService Resolve<TService>()
         {
-            return (TService) ActivateFromServiceType(typeof (TService));
+            var context = new ResolutionContext();
+            return (TService) ActivateFromServiceType(typeof (TService), context);
         }
 
-        object ActivateFromServiceType(Type serviceType)
+        object ActivateFromServiceType(Type serviceType, ResolutionContext context)
         {
             var componentModels = componentModelsByServiceType[serviceType];
 
@@ -85,7 +86,7 @@ namespace Jug
 
             Type implementationType = null;
 
-            foreach(var selector in selectors)
+            foreach (var selector in selectors)
             {
                 var componentModel = selector.Select(componentModels.ToArray());
                 if (componentModel != null)
@@ -94,16 +95,23 @@ namespace Jug
                 }
             }
 
-            return ActivateFromImplementationType(implementationType ?? DefaultImplementationType(componentModels));
+            var typeToCreate = implementationType ?? DefaultImplementationType(componentModels);
+
+            var instance = context.GetInstance(typeToCreate)
+                           ?? ActivateFromImplementationType(typeToCreate, context);
+
+            context.AddInstance(instance);
+
+            return instance;
         }
 
-        object ActivateFromImplementationType(Type implementationType)
+        object ActivateFromImplementationType(Type implementationType, ResolutionContext context)
         {
             var firstConstructor = implementationType.GetConstructors().First();
 
             var constructorArguments = firstConstructor
                 .GetParameters()
-                .Select(p => ActivateFromServiceType(p.ParameterType))
+                .Select(p => ActivateFromServiceType(p.ParameterType, context))
                 .ToArray();
 
             return firstConstructor.Invoke(constructorArguments);
@@ -128,6 +136,23 @@ namespace Jug
             componentModelsByImplementationType[implementationType] = componentModel;
 
             return componentModel;
+        }
+
+        class ResolutionContext
+        {
+            readonly Dictionary<Type, object> instances = new Dictionary<Type, object>();
+
+            public void AddInstance(object instance)
+            {
+                instances[instance.GetType()] = instance;
+            }
+
+            public object GetInstance(Type typeToCreate)
+            {
+                return instances.ContainsKey(typeToCreate)
+                           ? instances[typeToCreate]
+                           : null;
+            }
         }
     }
 }
