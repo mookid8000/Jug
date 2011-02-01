@@ -4,7 +4,7 @@ namespace Jug
 {
     public interface IComponentSelector
     {
-        ComponentModel Select(IEnumerable<ComponentModel> componentModels);
+        ComponentModel Select(ComponentModel[] componentModels);
     }
 
     public interface IComponentSelector<TService> : IComponentSelector

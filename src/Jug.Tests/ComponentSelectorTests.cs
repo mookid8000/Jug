@@ -48,7 +48,7 @@ namespace Jug.Tests
 
         class WillSelectThirdImplementation : IComponentSelector<ISomeService>
         {
-            public ComponentModel Select(IEnumerable<ComponentModel> componentModels)
+            public ComponentModel Select(ComponentModel[] componentModels)
             {
                 return componentModels.Single(c => c.ImplementationType == typeof (ThirdImplementation));
             }

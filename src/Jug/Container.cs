@@ -87,7 +87,7 @@ namespace Jug
 
             foreach(var selector in selectors)
             {
-                var componentModel = selector.Select(componentModels);
+                var componentModel = selector.Select(componentModels.ToArray());
                 if (componentModel != null)
                 {
                     implementationType = componentModel.ImplementationType;
