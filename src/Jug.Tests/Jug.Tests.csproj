@@ -53,6 +53,7 @@
     <Compile Include="ComponentSelectorTests.cs" />
     <Compile Include="InstanceFilterTests.cs" />
     <Compile Include="FixtureFor.cs" />
+    <Compile Include="MoreAutowiringTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
