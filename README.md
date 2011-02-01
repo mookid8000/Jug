@@ -41,7 +41,7 @@ and MySelector could look something like this:
 		}
 	}
 
-ensuring that @SecondImplementation@ will be picked.
+ensuring that `SecondImplementation` will be picked.
 
 Now, imaging how nifty this could be when the selector depends on various business services and stuff, thus providing the hook that has always been missing in Windsor!
 
