@@ -15,9 +15,9 @@ What's interesting about it?
 
 Not much, really. I was just a little bit inspired by one of the posts on Castle Windsor's UserVoice, that suggested that the container be put more to use in extensibility scenarios.
 
-E.g. it is annoying with Windsor that IHandlerSelector is just a plan old object instance, that sits right there in the container - instantiated and all. Why not pull IHandlerSelectors from the container?
+E.g. it is annoying with Windsor that `IHandlerSelector` is just a plan old object instance, that sits right there in the container - instantiated and all. Why not pull `IHandlerSelector`s from the container?
 
-In Jug, you select between various implementations of the same service like so:
+In Jug, you select between various implementations of the same service by implementing an `IComponentSelector<...>` like so:
 
 	var container = new Jug.Container();
 	
