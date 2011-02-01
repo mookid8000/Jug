@@ -43,7 +43,7 @@
     <Compile Include="ComponentModel.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="IComponentSelector.cs" />
-    <Compile Include="IInstanceFilter.cs" />
+    <Compile Include="IComponentFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

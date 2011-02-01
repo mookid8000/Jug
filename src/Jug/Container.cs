@@ -40,51 +40,70 @@ namespace Jug
             }
         }
 
-        public T[] ResolveAll<T>()
+        public TService[] ResolveAll<TService>()
         {
-            var serviceType = typeof(T);
+            var serviceType = typeof(TService);
             var objects = ResolveAll(serviceType);
-            var targetArray = new T[objects.Length];
+            var targetArray = new TService[objects.Length];
             Array.Copy(objects, targetArray, objects.Length);
             return targetArray;
         }
 
         object[] ResolveAll(Type serviceType)
         {
-            var componentModels = componentModelsByServiceType[serviceType];
+            if (!componentModelsByServiceType.ContainsKey(serviceType))
+            {
+                return new object[0];
+            }
+
+            var componentModels = componentModelsByServiceType[serviceType].ToArray();
+
+            var filters = ResolveAll(typeof (IComponentFilter<>).MakeGenericType(serviceType))
+                .Cast<IComponentFilter>();
+
+            foreach(var filter in filters)
+            {
+                componentModels = filter.Filter(componentModels);
+            }
 
             return componentModels
                 .Select(c => Activator.CreateInstance(c.ImplementationType))
                 .ToArray();
         }
 
-        public T Resolve<T>()
+        public TService Resolve<TService>()
         {
-            var serviceType = typeof(T);
-
-            return (T) Resolve(serviceType);
+            return (TService) ActivateFromServiceType(typeof (TService));
         }
 
-        object Resolve(Type serviceType)
-        {
-            return Activate(serviceType);
-        }
-
-        object Activate(Type serviceType)
+        object ActivateFromServiceType(Type serviceType)
         {
             var componentModels = componentModelsByServiceType[serviceType];
 
-            dynamic selectors = ResolveAll(typeof (IComponentSelector<>).MakeGenericType(serviceType));
+            var selectors = ResolveAll(typeof (IComponentSelector<>).MakeGenericType(serviceType))
+                .Cast<IComponentSelector>();
 
-            var implementationType = (Type) (selectors.Length == 0
-                                                 ? DefaultImplementationType(componentModels)
-                                                 : GetComponentModelFromSelectors(selectors, componentModels));
+            Type implementationType = null;
 
+            foreach(var selector in selectors)
+            {
+                var componentModel = selector.Select(componentModels);
+                if (componentModel != null)
+                {
+                    implementationType = componentModel.ImplementationType;
+                }
+            }
+
+            return ActivateFromImplementationType(implementationType ?? DefaultImplementationType(componentModels));
+        }
+
+        object ActivateFromImplementationType(Type implementationType)
+        {
             var firstConstructor = implementationType.GetConstructors().First();
 
             var constructorArguments = firstConstructor
                 .GetParameters()
-                .Select(p => Activate(p.ParameterType))
+                .Select(p => ActivateFromServiceType(p.ParameterType))
                 .ToArray();
 
             return firstConstructor.Invoke(constructorArguments);
@@ -93,21 +112,6 @@ namespace Jug
         Type DefaultImplementationType(List<ComponentModel> componentModels)
         {
             return componentModels.First().ImplementationType;
-        }
-
-        Type GetComponentModelFromSelectors(dynamic selectors, IEnumerable<ComponentModel> componentModels)
-        {
-            foreach(dynamic selector in selectors)
-            {
-                var componentModel = (ComponentModel) selector.Select(componentModels);
-            
-                if (componentModel != null)
-                {
-                    return componentModel.ImplementationType;
-                }
-            }
-
-            return null;
         }
 
         ComponentModel ForImplementationType(Type implementationType)

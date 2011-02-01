@@ -20,7 +20,7 @@ namespace Jug.Tests
                 .Register<IService, ServiceImpl2>()
                 .Register<IService, ServiceImpl1>();
 
-            service.Register<IInstanceFilter<IService>, Something>();
+            service.Register<IComponentFilter<IService>, Something>();
 
             // act
             var services = service.ResolveAll<IService>();
@@ -32,11 +32,13 @@ namespace Jug.Tests
             services[2].GetType().Name.ShouldBe("ServiceImpl3");
         }
 
-        class Something : IInstanceFilter<IService>
+        class Something : IComponentFilter<IService>
         {
-            public IService[] Filter(IService[] services)
+            public ComponentModel[] Filter(ComponentModel[] componentModels)
             {
-                return services.OrderBy(s => s.GetType().Name).ToArray();
+                return componentModels
+                    .OrderBy(componentModel => componentModel.ImplementationType.Name)
+                    .ToArray();
             }
         }
 
