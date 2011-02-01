@@ -23,23 +23,6 @@ namespace Jug
             return this;
         }
 
-        void AddServiceType(ComponentModel componentModel, Type serviceType)
-        {
-            componentModel.AddServiceType(serviceType);
-
-            if (!componentModelsByServiceType.ContainsKey(serviceType))
-            {
-                componentModelsByServiceType[serviceType] = new List<ComponentModel>();
-            }
-
-            var list = componentModelsByServiceType[serviceType];
-
-            if (!list.Contains(componentModel))
-            {
-                list.Add(componentModel);
-            }
-        }
-
         public TService[] ResolveAll<TService>()
         {
             var serviceType = typeof(TService);
@@ -47,6 +30,12 @@ namespace Jug
             var targetArray = new TService[objects.Length];
             Array.Copy(objects, targetArray, objects.Length);
             return targetArray;
+        }
+
+        public TService Resolve<TService>()
+        {
+            var context = new ResolutionContext();
+            return (TService) ActivateFromServiceType(typeof (TService), context);
         }
 
         object[] ResolveAll(Type serviceType)
@@ -69,12 +58,6 @@ namespace Jug
             return componentModels
                 .Select(c => Activator.CreateInstance(c.ImplementationType))
                 .ToArray();
-        }
-
-        public TService Resolve<TService>()
-        {
-            var context = new ResolutionContext();
-            return (TService) ActivateFromServiceType(typeof (TService), context);
         }
 
         object ActivateFromServiceType(Type serviceType, ResolutionContext context)
@@ -115,6 +98,23 @@ namespace Jug
                 .ToArray();
 
             return firstConstructor.Invoke(constructorArguments);
+        }
+
+        void AddServiceType(ComponentModel componentModel, Type serviceType)
+        {
+            componentModel.AddServiceType(serviceType);
+
+            if (!componentModelsByServiceType.ContainsKey(serviceType))
+            {
+                componentModelsByServiceType[serviceType] = new List<ComponentModel>();
+            }
+
+            var list = componentModelsByServiceType[serviceType];
+
+            if (!list.Contains(componentModel))
+            {
+                list.Add(componentModel);
+            }
         }
 
         Type DefaultImplementationType(List<ComponentModel> componentModels)
